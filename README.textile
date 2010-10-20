@@ -60,7 +60,7 @@ h2. How to make use of generated code in your project
 
 Copy the compiled nib2objc binary to /usr/local/bin or modify the nib2objc.py script to point to it.
 
-Add a new 'Shell Script Target' to the project, set the script as [nib2objc project path]/Contrib/nib2objc.py
+Add a new 'Shell Script Target' to the project, set the script as /usr/local/bin/nib2objc.py (need to copy script first) or [nib2objc project path]/Contrib/nib2objc.py
 (this uses the environment variable to indentify the project directory and creates a XibFileName.xib.m file for each XibFileName.xib found)
 
 Set the script target as a dependency of the desired build target so it gets run before the build.
@@ -80,12 +80,21 @@ For a View:
 }
 </pre>
 
-For a TableViewCell:
+For a TableViewController:
+<pre>
+    #include "TableView.xib.m"
+    self.tableView = TableView;
+    [tableView setDelegate:self];
+    [tableView setDataSource:self];
+    [self.view addSubview:MainView];
+</pre>
+
+For a TableViewCell (MainView is a subview of the cell that contains all the elements):
 <pre>
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
         #include "XibFileName.xib.m"
-        [self addSubview:Label];
+        [self addSubview:MainView];
     }
     return self;
 }
