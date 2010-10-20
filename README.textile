@@ -39,7 +39,7 @@ This will generate a file with the output of the conversion, similar to this (ch
     // ...
 </pre>
 
-The generated code takes into account the real class hierarchies in the UIKit, and it outputs the correct constructors and/or method calls for each object, depending on its class, including the enum values corresponding to the properties using them.
+The generated code takes into account the real class hierarchies in the UIKit, and it outputs the correct constructors and/or method calls for each object, depending on its class, including the enum values corresponding to the properties using them. It also adds name aliases for items that have been named, so that dependant code does not need to be adjusted for each update that changes the order of components.
 
 h2. Mac OS X GUI Application
 
@@ -55,6 +55,43 @@ $ git submodule update
 h2. Mac OS X Service
 
 A secondary project in the "Convert with nib2objc" folder creates an Automator action, that can be used to create Mac OS X services with Automator. The "Convert with nib2objc.zip" file contains an example of such a service, ready to be installed in ~/Library/Services, and which can be called from the Finder after selecting a nib file. The result of the conversion will be placed in the clipboard for pasting into any application.
+
+h2. How to make use of generated code in your project
+
+Copy the compiled nib2objc binary to /usr/local/bin or modify the nib2objc.py script to point to it.
+
+Add a new 'Shell Script Target' to the project, set the script as [nib2objc project path]/Contrib/nib2objc.py
+(this uses the environment variable to indentify the project directory and creates a XibFileName.xib.m file for each XibFileName.xib found)
+
+Set the script target as a dependency of the desired build target so it gets run before the build.
+
+Override the initWithNibName and include the relevant xib.m file, then attach any controls you need to retain or add actions to.
+
+For a View:
+<pre>
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
+        #include "XibFileName.xib.m"
+        self.view=MainView;
+        self.label=Label;
+        [IncrementButton addTarget:self action:@selector(buttonClicked) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return self;
+}
+</pre>
+
+For a TableViewCell:
+<pre>
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+        #include "XibFileName.xib.m"
+        [self addSubview:Label];
+    }
+    return self;
+}
+</pre>
+
+Configure your source control to ignore *.xib.m files as these are auto created during the build process and don't need tracking.
 
 h2. Limitations
 

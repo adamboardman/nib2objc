@@ -224,6 +224,15 @@
     {
         int currentView = [[item objectForKey:@"object-id"] intValue];
         [self parseChildren:item ofCurrentView:currentView withObjects:objects];
+		
+        NSString *userDefinedName=[item objectForKey:@"name"];
+        id currentViewObject = [objects objectForKey:[NSString stringWithFormat:@"%d", currentView]];
+        if (userDefinedName && currentViewObject) {
+            id klass = [currentViewObject objectForKey:@"class"];
+            userDefinedName=[self removeNonAlphanumericCharactersFromString:userDefinedName];
+            NSString *instanceName = [self instanceNameForObject:currentViewObject];
+            [_output appendFormat:@"%@ *%@ = %@%d;\n", klass, userDefinedName, instanceName,currentView];
+        }
     }
     
     [objects release];
@@ -247,6 +256,13 @@
             
             [self parseChildren:subitem ofCurrentView:subview withObjects:objects];
             [_output appendFormat:@"[%@%d addSubview:%@%d];\n", instanceName, currentView, subInstanceName, subview];
+			
+            NSString *userDefinedName=[subitem objectForKey:@"name"];
+            if (userDefinedName) {
+                id klass = [subViewObject objectForKey:@"class"];
+                userDefinedName=[self removeNonAlphanumericCharactersFromString:userDefinedName];
+                [_output appendFormat:@"%@ *%@ = %@%d;\n", klass, userDefinedName, subInstanceName,subview];
+            }
         }
     }
 }
@@ -256,6 +272,23 @@
     id klass = [obj objectForKey:@"class"];
     NSString *instanceName = [[klass lowercaseString] substringFromIndex:2];
     return instanceName;
+}
+
+- (NSString*)removeNonAlphanumericCharactersFromString:(NSString*)stringParam{
+    NSCharacterSet *charactersToRemove=[[NSCharacterSet alphanumericCharacterSet] invertedSet];
+    NSString *trimmedStringParam=[stringParam stringByTrimmingCharactersInSet:charactersToRemove];
+    
+    NSArray *subStrings=[trimmedStringParam componentsSeparatedByCharactersInSet:charactersToRemove];
+    NSMutableString *finalString=[NSMutableString string];
+    [finalString setString:@""];
+    int currentSubStringElement=0;
+    for (NSString *s in subStrings) {
+        currentSubStringElement++;
+        if ([s length]>0) {
+            [finalString appendString:s];
+        }
+    }
+    return finalString;
 }
 
 @end

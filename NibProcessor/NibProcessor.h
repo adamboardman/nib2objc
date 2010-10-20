@@ -31,5 +31,6 @@ typedef enum {
 
 - (NSString *)inputAsText;
 - (NSDictionary *)inputAsDictionary;
+- (NSString*)removeNonAlphanumericCharactersFromString:(NSString*)stringParam;
 
 @end
