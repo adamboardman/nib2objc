@@ -15,9 +15,11 @@ def main():
 	for root, subFolders, files in os.walk(os.environ['PROJECT_DIR']):
 		for file in fnmatch.filter(files, '*.xib'):
 			filename=os.path.join(root,file)
-			code=subprocess.Popen(['/usr/local/bin/nib2objc',filename], stdout=subprocess.PIPE).communicate()[0]
-			f = open(filename+'.m','w')
-			f.write(code)
+			fileout=filename+'.m'
+			if ((not os.path.exists(fileout)) or (os.stat(filename).st_mtime>os.stat(fileout).st_mtime)):
+				code=subprocess.Popen(['/usr/local/bin/nib2objc',filename], stdout=subprocess.PIPE).communicate()[0]
+				f = open(fileout,'w')
+				f.write(code)
 
 if __name__ == '__main__':
 	main()
